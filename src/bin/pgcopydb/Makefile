@@ -88,7 +88,7 @@ endif
 
 
 $(PGCOPYDB): VERSION-FILE $(OBJS) $(INCLUDES)
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $(LIBS) -o $@
+	$(CC) $(CFLAGS) -ggdb $(OBJS) $(LDFLAGS) $(LIBS) -o $@
 
 lib-snprintf.o: $(PG_SNPRINTF)
 	$(CC) $(CFLAGS) -c -MMD -MP -MF$(DEPDIR)/$(*F).Po -MT$@ -o $@ ${SRC_DIR}../lib/pg/snprintf.c

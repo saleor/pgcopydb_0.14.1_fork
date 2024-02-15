@@ -359,12 +359,14 @@ stream_transform_line(void *ctx, const char *line, bool *stop)
  * message down to file, and maybe also stdout (Unix PIPE).
  */
 bool
-stream_transform_write_message(StreamContext *privateContext,
+stream_transform_write_message(StreamContext *privateContext, /* LOGI DO DODANIA */
 							   uint64_t *currentMsgIndex)
 {
+	log_notice("point 1");
 	LogicalMessage *currentMsg = &(privateContext->currentMsg);
+	log_notice("point 2");
 	LogicalMessageMetadata *metadata = &(privateContext->metadata);
-
+	log_notice("point 3");
 	/*
 	 * Is it time to close the current message and prepare a new one?
 	 *
@@ -379,20 +381,23 @@ stream_transform_write_message(StreamContext *privateContext,
 	{
 		return true;
 	}
-
+	log_notice("point 4");
 	LogicalTransaction *txn = &(currentMsg->command.tx);
-
+	log_notice("point 5");
 	if (metadata->action == STREAM_ACTION_COMMIT)
 	{
 		/* now write the COMMIT message even when txn is continued */
+		log_notice("point 6");
 		txn->commit = true;
 	}
 
 	/* now write the transaction out */
 	if (privateContext->out != NULL)
 	{
+		log_notice("point 7");
 		if (!stream_write_message(privateContext->out, currentMsg))
 		{
+			log_notice("point 8");
 			/* errors have already been logged */
 			return false;
 		}
@@ -401,15 +406,19 @@ stream_transform_write_message(StreamContext *privateContext,
 	/* now write the transaction out also to file on-disk */
 	if (!stream_write_message(privateContext->sqlFile, currentMsg))
 	{
+		log_notice("point 9");
 		/* errors have already been logged */
 		return false;
 	}
 
+	log_notice("point 10");
 	(void) FreeLogicalMessage(currentMsg);
+	log_notice("point 11");
 
 	if (metadata->action == STREAM_ACTION_COMMIT)
 	{
 		/* then prepare a new one, reusing the same memory area */
+		log_notice("point 12");
 		LogicalMessage empty = { 0 };
 
 		*currentMsg = empty;
@@ -422,27 +431,32 @@ stream_transform_write_message(StreamContext *privateContext,
 		 * middle of a transaction: we need to mark the new transaction as
 		 * a continued part of the previous one.
 		 */
+		log_notice("point 13");
 		log_debug("stream_transform_line: continued transaction at %c: %X/%X",
 				  metadata->action,
 				  LSN_FORMAT_ARGS(metadata->lsn));
 
 		LogicalMessage new = { 0 };
+		log_notice("point 14");
 
 		new.isTransaction = true;
 		new.action = STREAM_ACTION_BEGIN;
+		log_notice("point 15");
 
 		LogicalTransaction *old = &(currentMsg->command.tx);
+		log_notice("point 16");
 		LogicalTransaction *txn = &(new.command.tx);
-
+		log_notice("point 17");
 		txn->continued = true;
 
 		txn->xid = old->xid;
 		txn->beginLSN = old->beginLSN;
 		strlcpy(txn->timestamp, old->timestamp, sizeof(txn->timestamp));
-
+		log_notice("point 18");
 		txn->first = NULL;
 
 		*currentMsg = new;
+		log_notice("point 19 - end");
 	}
 
 	return true;
@@ -878,9 +892,6 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 
 	for (int i = 0; i < content.count; i++)
 	{
-
-		log_notice("START OF LOOP: stream_transform_file[%2d]", i);
-
 		char *message = content.lines[i];
 
 		LogicalMessageMetadata empty = { 0 };
@@ -932,12 +943,7 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 			return false;
 		}
 
-		log_notice("BEFORE JSON FREE: stream_transform_file[%2d]: %s", i, message);
-
 		json_value_free(json);
-
-		log_notice("AFTER JSON FREE: stream_transform_file[%2d]: %s", i, message);
-
 
 		/*
 		 * Prepare a new message when we just read the COMMIT message of an
@@ -945,7 +951,7 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 		 * non-transactional message (such as a KEEPALIVE or a SWITCH WAL or an
 		 * ENDPOS message).
 		 */
-		if (!stream_transform_write_message(privateContext, &currentMsgIndex))
+		if (!stream_transform_write_message(privateContext, &currentMsgIndex)) /* THIS SEEMS TO BE THE ISSUE */
 		{
 			log_error("Failed to transform and flush the current message, "
 					  "see above for details");

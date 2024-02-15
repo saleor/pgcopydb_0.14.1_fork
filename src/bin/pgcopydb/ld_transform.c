@@ -382,21 +382,21 @@ stream_transform_write_message(StreamContext *privateContext, /* LOGI DO DODANIA
 	if (metadata->action == STREAM_ACTION_COMMIT)
 	{
 		/* now write the COMMIT message even when txn is continued */
-		log_notice("point 1");
+		/* log_notice("point 1"); */
 		txn->commit = true;
 	}
-	log_notice("point 2");
+	/* log_notice("point 2");  */
 	/* now write the transaction out */
 	if (privateContext->out != NULL)
 	{
-		log_notice("point 3");
+		/* log_notice("point 3");  */
 		if (!stream_write_message(privateContext->out, currentMsg))
 		{
 			/* errors have already been logged */
 			return false;
 		}
 	}
-
+	/* log_notice("point 4");  */
 	/* now write the transaction out also to file on-disk */
 	if (!stream_write_message(privateContext->sqlFile, currentMsg))
 	{

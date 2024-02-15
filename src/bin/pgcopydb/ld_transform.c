@@ -929,9 +929,12 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 			return false;
 		}
 
-		log_debug("BEFORE JSON FREE: stream_transform_file[%2d]: %s", i, message);
+		log_notice("BEFORE JSON FREE: stream_transform_file[%2d]: %s", i, message);
 
 		json_value_free(json);
+
+		log_notice("AFTER JSON FREE: stream_transform_file[%2d]: %s", i, message);
+
 
 		/*
 		 * Prepare a new message when we just read the COMMIT message of an
@@ -948,8 +951,6 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 			return false;
 		}
 
-		log_debug("AFTER JSON FREE: stream_transform_file[%2d]: %s", i, message);
-
 		/*
 		 * skip KEEPALIVE messages at beginning of files in our continued
 		 * transaction logic
@@ -961,8 +962,7 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 	}
 
 
-	log_debug("END OF: stream_transform_file writing to \"%s\"", tempfilename);
-
+	log_notice("END OF: stream_transform_file writing to \"%s\"", tempfilename);
 
 	if (fclose(privateContext->sqlFile) == EOF)
 	{

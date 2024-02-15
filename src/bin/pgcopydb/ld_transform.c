@@ -362,11 +362,8 @@ bool
 stream_transform_write_message(StreamContext *privateContext, /* LOGI DO DODANIA */
 							   uint64_t *currentMsgIndex)
 {
-	log_notice("point 1");
 	LogicalMessage *currentMsg = &(privateContext->currentMsg);
-	log_notice("point 2");
 	LogicalMessageMetadata *metadata = &(privateContext->metadata);
-	log_notice("point 3");
 	/*
 	 * Is it time to close the current message and prepare a new one?
 	 *
@@ -381,23 +378,20 @@ stream_transform_write_message(StreamContext *privateContext, /* LOGI DO DODANIA
 	{
 		return true;
 	}
-	log_notice("point 4");
 	LogicalTransaction *txn = &(currentMsg->command.tx);
-	log_notice("point 5");
 	if (metadata->action == STREAM_ACTION_COMMIT)
 	{
 		/* now write the COMMIT message even when txn is continued */
-		log_notice("point 6");
+		log_notice("point 1");
 		txn->commit = true;
 	}
-
+	log_notice("point 2");
 	/* now write the transaction out */
 	if (privateContext->out != NULL)
 	{
-		log_notice("point 7");
+		log_notice("point 3");
 		if (!stream_write_message(privateContext->out, currentMsg))
 		{
-			log_notice("point 8");
 			/* errors have already been logged */
 			return false;
 		}
@@ -406,19 +400,16 @@ stream_transform_write_message(StreamContext *privateContext, /* LOGI DO DODANIA
 	/* now write the transaction out also to file on-disk */
 	if (!stream_write_message(privateContext->sqlFile, currentMsg))
 	{
-		log_notice("point 9");
+
 		/* errors have already been logged */
 		return false;
 	}
 
-	log_notice("point 10");
 	(void) FreeLogicalMessage(currentMsg);
-	log_notice("point 11");
 
 	if (metadata->action == STREAM_ACTION_COMMIT)
 	{
 		/* then prepare a new one, reusing the same memory area */
-		log_notice("point 12");
 		LogicalMessage empty = { 0 };
 
 		*currentMsg = empty;
@@ -431,32 +422,25 @@ stream_transform_write_message(StreamContext *privateContext, /* LOGI DO DODANIA
 		 * middle of a transaction: we need to mark the new transaction as
 		 * a continued part of the previous one.
 		 */
-		log_notice("point 13");
 		log_debug("stream_transform_line: continued transaction at %c: %X/%X",
 				  metadata->action,
 				  LSN_FORMAT_ARGS(metadata->lsn));
 
 		LogicalMessage new = { 0 };
-		log_notice("point 14");
 
 		new.isTransaction = true;
 		new.action = STREAM_ACTION_BEGIN;
-		log_notice("point 15");
 
 		LogicalTransaction *old = &(currentMsg->command.tx);
-		log_notice("point 16");
 		LogicalTransaction *txn = &(new.command.tx);
-		log_notice("point 17");
 		txn->continued = true;
 
 		txn->xid = old->xid;
 		txn->beginLSN = old->beginLSN;
 		strlcpy(txn->timestamp, old->timestamp, sizeof(txn->timestamp));
-		log_notice("point 18");
 		txn->first = NULL;
 
 		*currentMsg = new;
-		log_notice("point 19 - end");
 	}
 
 	return true;

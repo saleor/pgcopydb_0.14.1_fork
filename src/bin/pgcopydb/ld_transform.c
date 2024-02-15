@@ -929,6 +929,8 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 			return false;
 		}
 
+		log_debug("BEFORE JSON FREE: stream_transform_file[%2d]: %s", i, message);
+
 		json_value_free(json);
 
 		/*
@@ -945,6 +947,8 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 			free(content.lines);
 			return false;
 		}
+
+		log_debug("AFTER JSON FREE: stream_transform_file[%2d]: %s", i, message);
 
 		/*
 		 * skip KEEPALIVE messages at beginning of files in our continued

@@ -879,7 +879,7 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 	for (int i = 0; i < content.count; i++)
 	{
 
-		log_notice("START OF LOOP: stream_transform_file[%2d]: %s", i, message);
+		log_notice("START OF LOOP: stream_transform_file[%2d]", i);
 
 		char *message = content.lines[i];
 

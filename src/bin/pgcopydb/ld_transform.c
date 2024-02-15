@@ -883,7 +883,7 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 		LogicalMessageMetadata empty = { 0 };
 		*metadata = empty;
 
-		log_trace("stream_transform_file[%2d]: %s", i, message);
+		log_debug("stream_transform_file[%2d]: %s", i, message);
 
 		JSON_Value *json = json_parse_string(message);
 
@@ -955,6 +955,10 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 			firstMessage = false;
 		}
 	}
+
+
+	log_debug(("END OF: stream_transform_file writing to \"%s\"", tempfilename);
+
 
 	if (fclose(privateContext->sqlFile) == EOF)
 	{

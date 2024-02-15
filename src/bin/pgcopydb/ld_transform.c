@@ -957,7 +957,7 @@ stream_transform_file(StreamSpecs *specs, char *jsonfilename, char *sqlfilename)
 	}
 
 
-	log_debug(("END OF: stream_transform_file writing to \"%s\"", tempfilename);
+	log_debug("END OF: stream_transform_file writing to \"%s\"", tempfilename);
 
 
 	if (fclose(privateContext->sqlFile) == EOF)
